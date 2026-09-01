@@ -1,0 +1,26 @@
+{
+  "name": "Chiswick Knee Clinic",
+  "baseUrl": "https://sportshealingcalendar-ops.github.io/Chiswick-Knee-Clinic/",
+
+  "_comment_baseUrl": "Trailing slash required. Swap for https://your-domain/ and add a CNAME file when a custom domain is set up; every internal link is relative so the site works at either base.",
+
+  "deployBranch": "dev",
+
+  "_comment_exempt": "Pages that are deliberately unreachable by link traversal and absent from sitemap.xml.",
+  "orphanExempt": ["404.html"],
+  "sitemapExempt": ["404.html"],
+
+  "_comment_bannedWords": "Advertising-claim tripwire for a UK medical site (ASA CAP 12.x / GMC guidance): outcome guarantees and superlatives must not reach a published page. Matched case-insensitively on whole words. Edit freely - this list is content policy, not code.",
+  "bannedWords": [
+    "guaranteed",
+    "guarantee",
+    "cure",
+    "cures",
+    "painless",
+    "risk-free",
+    "miracle",
+    "best in the world",
+    "100% success",
+    "no side effects"
+  ]
+}

@@ -1,0 +1,124 @@
+:root {
+  --ink: #16232c;
+  --ink-soft: #4a5a66;
+  --paper: #fbfcfc;
+  --rule: #dde5e9;
+  --accent: #146b6b;
+  --accent-ink: #ffffff;
+  --measure: 34rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf1;
+    --ink-soft: #a3b3bd;
+    --paper: #10181d;
+    --rule: #26343d;
+    --accent: #4fd1c5;
+    --accent-ink: #0b1418;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+a { color: var(--accent); }
+
+.site-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.wordmark {
+  font-weight: 650;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.site-head nav a {
+  text-decoration: none;
+  font-size: .9375rem;
+}
+
+.site-head nav a[aria-current="page"] { color: var(--ink-soft); }
+
+main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+main section + section { margin-top: 2.5rem; }
+
+h1 {
+  font-size: clamp(1.6rem, 4.5vw, 2.35rem);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  margin: 0 0 .75rem;
+}
+
+h2 {
+  font-size: 1.125rem;
+  letter-spacing: -.01em;
+  margin: 0 0 .5rem;
+}
+
+p { max-width: var(--measure); }
+
+.lede {
+  font-size: 1.0625rem;
+  color: var(--ink-soft);
+}
+
+.cta {
+  display: inline-block;
+  margin-top: .5rem;
+  padding: .55rem 1.05rem;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.steps {
+  max-width: var(--measure);
+  padding-left: 1.25rem;
+}
+
+.steps li + li { margin-top: .5rem; }
+
+.site-foot {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: .875rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1.5rem;
+  justify-content: space-between;
+}
+
+.site-foot p { margin: 0; }
+
+.version {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

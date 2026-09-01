@@ -1,0 +1,17 @@
+# Plaintext secret tier - never committed. The validator reads this file (if present)
+# and scans every tracked file for each literal it contains, so a secret that reaches
+# the tree fails the build by construction.
+admin/build/.secret-strings
+
+# Keys and credentials
+*.pem
+*.key
+*.p12
+.env
+.env.*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+node_modules/

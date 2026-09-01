@@ -1,0 +1,118 @@
+name: Deploy to GitHub Pages
+
+# Four stages, in the order that makes each failure cheap:
+#
+#   validate  -> tag-release -> deploy -> verify
+#   nothing     bookkeeping    readers   the only check that proves
+#   ships       only          see it     anybody can read it
+#
+# The gate between tag-release and deploy is the subtle one. `deploy` requires
+# tag-release to be success OR skipped, because a *failure* is neither - so a
+# strict tag rule turns into a site outage. That is why the tag contract only
+# binds commits that explicitly claim a version. See admin/build/tag-release.sh.
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never let two deploys race for the Pages environment; never cancel one
+# half-way, because a cancelled deploy can leave the site mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The build is derived output only (version stamps, sitemap, robots), so
+      # --check proves the committed tree is what the build would produce.
+      - name: build is current
+        run: node admin/build/build.js --check
+
+      - name: test suite
+        run: node admin/build/validate.js
+
+      # Proves the validator and the tag contract still fail when they should.
+      # A suite that has only ever seen a passing tree is not evidence.
+      - name: self-test the checks
+        run: bash admin/build/selftest.sh
+
+  tag-release:
+    name: tag-release
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: tag if this commit claims a version
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash admin/build/tag-release.sh
+
+  deploy:
+    name: deploy
+    needs: [validate, tag-release]
+    # success OR skipped - a tag-release *failure* must not silently block the
+    # site, but a broken release contract should stop the publish.
+    if: |
+      always()
+      && needs.validate.result == 'success'
+      && (needs.tag-release.result == 'success' || needs.tag-release.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+
+      # The whole tree is the site; only machinery is excluded.
+      - name: stage the site
+        run: |
+          mkdir -p _site
+          rsync -a --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'admin' \
+            --exclude '_site' \
+            ./ _site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  verify:
+    name: verify the deploy actually published
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ask the live site what version it is serving
+        run: bash admin/build/verify-live.sh "${{ needs.deploy.outputs.page_url }}" 480

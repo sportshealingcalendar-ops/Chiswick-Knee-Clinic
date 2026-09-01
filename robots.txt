@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sportshealingcalendar-ops.github.io/Chiswick-Knee-Clinic/sitemap.xml
