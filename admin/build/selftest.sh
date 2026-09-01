@@ -118,42 +118,69 @@ echo "== the tag contract"
 
 TAG=(bash admin/build/tag-release.sh --dry-run)
 
-d="$(fresh)"
-git -C "$d" commit -q --allow-empty -m "fix a typo in the footer"
-check 0 "ordinary push tags nothing and still publishes" "$d" "${TAG[@]}"
+# Build a release commit in a throwaway repo: set VERSION, commit with the
+# given subject.
+#
+# The scratch file is what makes this correct rather than convenient. These
+# fixtures set VERSION to literal values, and `fresh` copies the CURRENT tree -
+# so the first time the repo's own VERSION reached a fixture value, that write
+# became a no-op, `git commit` found nothing to commit, and the case silently
+# ran against the baseline commit instead. Two cases failed; a third
+# ("first release tags") kept reporting ok, because a baseline commit is an
+# ordinary push and exits 0 for the wrong reason.
+#
+# So: always produce a real commit, and assert the subject actually landed.
+# A fixture that does not build what it claims must fail loudly, never pass.
+stage() { # stage <dir> <version|-> <subject>
+  local dir="$1" version="$2" subject="$3"
+  [[ "$version" != "-" ]] && printf '%s\n' "$version" > "$dir/VERSION"
+  printf 'fixture: %s\n' "$subject" > "$dir/.selftest-fixture"
+  git -C "$dir" add -A
+  if ! git -C "$dir" commit -qm "$subject"; then
+    printf '  FAIL fixture built no commit: %s\n' "$subject"
+    FAIL=$((FAIL + 1))
+    return 1
+  fi
+  local landed
+  landed="$(git -C "$dir" log -1 --pretty=%s)"
+  if [[ "$landed" != "$subject" ]]; then
+    printf '  FAIL fixture subject is "%s", wanted "%s"\n' "$landed" "$subject"
+    FAIL=$((FAIL + 1))
+    return 1
+  fi
+}
 
 d="$(fresh)"
-printf 'v0.1.1\n' > "$d/VERSION"
-git -C "$d" add -A && git -C "$d" commit -qm "site v0.1.1: first release"
-check 0 "first release tags" "$d" "${TAG[@]}"
+stage "$d" - "fix a typo in the footer" &&
+  check 0 "ordinary push tags nothing and still publishes" "$d" "${TAG[@]}"
 
 d="$(fresh)"
-printf 'v0.1.1\n' > "$d/VERSION"
-git -C "$d" add -A && git -C "$d" commit -qm "site v0.1.4: skipped ahead"
-check 1 "subject and VERSION disagree" "$d" "${TAG[@]}"
+stage "$d" v0.1.1 "site v0.1.1: first release" &&
+  check 0 "first release tags" "$d" "${TAG[@]}"
 
 d="$(fresh)"
-printf 'v0.1.1\n' > "$d/VERSION"
-git -C "$d" add -A && git -C "$d" commit -qm "site v0.1.1: first release"
-git -C "$d" tag -a v0.1.1 -m existing
-check 1 "reusing a shipped version" "$d" "${TAG[@]}"
+stage "$d" v0.1.1 "site v0.1.4: skipped ahead" &&
+  check 1 "subject and VERSION disagree" "$d" "${TAG[@]}"
+
+d="$(fresh)"
+stage "$d" v0.1.1 "site v0.1.1: first release" &&
+  git -C "$d" tag -a v0.1.1 -m existing &&
+  check 1 "reusing a shipped version" "$d" "${TAG[@]}"
 
 d="$(fresh)"
 git -C "$d" tag -a v0.1.1 -m shipped
-printf 'v0.1.5\n' > "$d/VERSION"
-git -C "$d" add -A && git -C "$d" commit -qm "site v0.1.5: skips v0.1.2"
-check 1 "skipping a version" "$d" "${TAG[@]}"
+stage "$d" v0.1.5 "site v0.1.5: skips v0.1.2" &&
+  check 1 "skipping a version" "$d" "${TAG[@]}"
 
 d="$(fresh)"
 git -C "$d" tag -a v0.1.1 -m shipped
-printf 'v0.2.0\n' > "$d/VERSION"
-git -C "$d" add -A && git -C "$d" commit -qm "site v0.2.0: minor bump"
-check 0 "minor bump follows a patch release" "$d" "${TAG[@]}"
+stage "$d" v0.2.0 "site v0.2.0: minor bump" &&
+  check 0 "minor bump follows a patch release" "$d" "${TAG[@]}"
 
 d="$(fresh)"
 git -C "$d" tag -a v0.1.1 -m shipped
-git -C "$d" commit -q --allow-empty -m "an ordinary push after a release"
-check 0 "ordinary push after a release is not held to the contract" "$d" "${TAG[@]}"
+stage "$d" - "an ordinary push after a release" &&
+  check 0 "ordinary push after a release is not held to the contract" "$d" "${TAG[@]}"
 
 echo
 echo "------------------------------------------------------------"
