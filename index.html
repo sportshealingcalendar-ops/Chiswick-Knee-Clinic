@@ -247,7 +247,11 @@
   /* ---------- Locations ---------- */
   .locations{background:var(--greige)}
   .loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .loc{background:var(--card);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  /* Scoped to the grid on purpose. The brand strapline in the header and the
+     footer is also <span class="loc">, so a bare .loc selector gave it this
+     card's white fill, rounded corners, shadow and flex column: a white box
+     around the text on both. */
+  .loc-grid > .loc{background:var(--card);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
   .loc .map{width:100%;height:180px;border:0;display:block;background:var(--primary-tint)}
   .loc .lb{padding:22px;display:flex;flex-direction:column;flex:1}
   .loc .tagp{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-dark);font-weight:700;margin-bottom:8px}
