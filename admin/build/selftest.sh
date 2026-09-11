@@ -89,7 +89,11 @@ node -e '
   const fs=require("fs"),p=process.argv[1];
   let h=fs.readFileSync(p,"utf8");
   h=h.replace(/href="\.\.\/assets/,"href=\"assets").replace(/href="\.\.\/"/,"href=\"./\"");
-  h=h.replace(/(rel="canonical" href=")[^"]*/,"$1https://sportshealingcalendar-ops.github.io/Chiswick-Knee-Clinic/orphan.html");
+  // Read baseUrl rather than hardcode it. A stale literal here would make the
+  // canonical wrong too, so the case would exit 1 for that reason and keep
+  // reporting ok long after it stopped testing orphan detection.
+  const base=JSON.parse(fs.readFileSync("admin/build/site.json","utf8")).baseUrl;
+  h=h.replace(/(rel="canonical" href=")[^"]*/,"$1"+base+"orphan.html");
   fs.writeFileSync(p,h);
 ' "$d/orphan.html"
 (cd "$d" && node admin/build/build.js >/dev/null 2>&1)

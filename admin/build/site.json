@@ -1,6 +1,6 @@
 {
   "name": "Chiswick Knee Clinic",
-  "baseUrl": "https://sportshealingcalendar-ops.github.io/Chiswick-Knee-Clinic/",
+  "baseUrl": "https://chiswickkneeclinic.com/",
 
   "_comment_baseUrl": "Trailing slash required. Swap for https://your-domain/ and add a CNAME file when a custom domain is set up; every internal link is relative so the site works at either base.",
 
