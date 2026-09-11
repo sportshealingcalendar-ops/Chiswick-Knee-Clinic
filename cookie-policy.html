@@ -59,6 +59,24 @@
   footer .base{padding-top:20px;font-size:13px;color:rgba(255,255,255,.6);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   footer .base a{color:rgba(255,255,255,.6);margin-left:16px}
   @media(max-width:700px){header .sp a:not(.btn){display:none} .title h1{font-size:32px}}
+  /* Below ~430px the brand lock-up plus the Book button is wider than the
+     viewport, which pushed the whole page into a sideways scroll. Shrink the
+     lock-up and let the brand take the leftover space instead of its natural
+     width. */
+  @media(max-width:430px){
+    /* Wrap onto two rows rather than shrink text to fit. Which font is in
+       use decides the lock-up width, and the serif fallback is wider than
+       Cormorant Garamond, so a size that fits with the webfont still
+       collided with the button without it. Wrapping holds either way. */
+    header .wrap{flex-wrap:wrap;gap:10px;padding-left:16px;padding-right:16px}
+    .brand{flex:1 0 100%;min-width:0}
+    .brand img{height:36px}
+    .brand .wm{font-size:17px;letter-spacing:.08em}
+    .brand .loc{font-size:8.5px;letter-spacing:.08em;white-space:normal}
+    header .sp{margin-left:0;width:100%}
+    header .sp .btn{width:100%;justify-content:center}
+    .btn{padding:10px 14px;font-size:13.5px}
+  }
 </style>
 </head>
 <body>

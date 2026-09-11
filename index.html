@@ -344,6 +344,18 @@
     .topbar .ti.hide-sm{display:none}
     footer.site .top{grid-template-columns:1fr}
   }
+  /* The brand lock-up is white-space:nowrap at a fixed size, so below ~400px
+     it and the hamburger together are wider than the screen: the strapline
+     was clipped at 390 and the whole page scrolled sideways at 320. Shrink
+     the lock-up rather than let it set the page width. */
+  @media(max-width:400px){
+    .wrap{padding:0 16px}
+    .brand{gap:9px;min-width:0}
+    .brand .mono{height:38px}
+    .brand .lock{min-width:0}
+    .brand .wm{font-size:17px;letter-spacing:.08em}
+    .brand .loc{font-size:8px;letter-spacing:.07em;white-space:normal}
+  }
   @media(prefers-reduced-motion:reduce){
     *{transition:none!important;scroll-behavior:auto!important}
     .reveal{opacity:1;transform:none}
