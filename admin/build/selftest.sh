@@ -50,6 +50,22 @@ check() { # check <expected-exit> <name> <dir> <command...>
 
 VALIDATE=(node admin/build/validate.js)
 
+# sed a fixture file and assert the edit landed. A pattern that stops matching
+# after a page is rewritten silently turns its case into a test of the clean
+# tree - which passes, and proves nothing. See the note above stage().
+mutate() { # mutate <file> <sed-expr>
+  local file="$1" expr="$2"
+  local before after
+  before="$(cat "$file")"
+  sed -i "$expr" "$file"
+  after="$(cat "$file")"
+  if [[ "$before" == "$after" ]]; then
+    printf '  FAIL fixture changed nothing: %s on %s\n' "$expr" "${file##*/}"
+    FAIL=$((FAIL + 1))
+    return 1
+  fi
+}
+
 echo "== the validator passes a clean tree"
 d="$(fresh)"
 check 0 "clean tree passes" "$d" "${VALIDATE[@]}"
@@ -58,11 +74,11 @@ echo
 echo "== the validator rejects a broken tree"
 
 d="$(fresh)"
-sed -i 's|href="treatments/"|href="treatmnets/"|' "$d/index.html"
+mutate "$d/index.html" 's|href="privacy-policy.html"|href="privacy-polciy.html"|'
 check 1 "broken internal link" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
-sed -i 's|href="treatments/"|href="/treatments/"|' "$d/index.html"
+mutate "$d/index.html" 's|href="privacy-policy.html"|href="/privacy-policy.html"|'
 check 1 "root-absolute link (breaks on a sub-path)" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
@@ -80,7 +96,7 @@ node -e '
 check 1 "orphan page" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
-sed -i 's|content="v0\.|content="v9.|' "$d/index.html"
+mutate "$d/index.html" 's|content="v0\.|content="v9.|'
 check 1 "stale version stamp" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
@@ -88,11 +104,11 @@ printf 'v0.9.9\n' > "$d/VERSION"
 check 1 "VERSION bumped without re-running the build" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
-sed -i 's|<h1>Specialist knee care|<h1>Guaranteed knee care|' "$d/index.html"
+mutate "$d/index.html" 's|<h1>Chiswick Knee Clinic:|<h1>Guaranteed knee care:|'
 check 1 "banned advertising claim" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"
-sed -i 's|<link rel="canonical"[^>]*>||' "$d/index.html"
+mutate "$d/index.html" 's|<link rel="canonical"[^>]*>||'
 check 1 "missing canonical URL" "$d" "${VALIDATE[@]}"
 
 d="$(fresh)"

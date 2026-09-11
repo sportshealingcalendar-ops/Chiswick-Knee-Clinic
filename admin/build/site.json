@@ -7,8 +7,10 @@
   "deployBranch": "dev",
 
   "_comment_exempt": "Pages that are deliberately unreachable by link traversal and absent from sitemap.xml.",
-  "orphanExempt": ["404.html"],
-  "sitemapExempt": ["404.html"],
+  "_comment_treatments": "treatments/index.html is the old site's page. The new home page links to sportshealing.com and chinmaygupte.com instead, so nothing links to it. Held here, unlinked and out of the sitemap, until it is either rewritten or removed. Do not leave it exempt permanently.",
+  "_comment_policies": "The three policy pages carry noindex while the wording is still a draft, so they are kept out of the sitemap.",
+  "orphanExempt": ["404.html", "treatments/index.html"],
+  "sitemapExempt": ["404.html", "treatments/index.html", "privacy-policy.html", "terms-and-conditions.html", "cookie-policy.html"],
 
   "_comment_bannedWords": "Advertising-claim tripwire for a UK medical site (ASA CAP 12.x / GMC guidance): outcome guarantees and superlatives must not reach a published page. Matched case-insensitively on whole words. Edit freely - this list is content policy, not code.",
   "bannedWords": [
